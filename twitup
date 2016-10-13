@@ -1,0 +1,7 @@
+from vizone.
+from twython import Twython
+twitter = Twython(APP_KEY, APP_SECRET,
+                  OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+
+from TwitterAPI import TwitterAPI
+api = TwitterAPI(consumer_key, consumer_secret, access_token_key, access_token_secret)
