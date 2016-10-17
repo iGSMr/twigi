@@ -1,7 +1,56 @@
-from vizone.
-from twython import Twython
-twitter = Twython(APP_KEY, APP_SECRET,
-                  OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-
 from TwitterAPI import TwitterAPI
-api = TwitterAPI(consumer_key, consumer_secret, access_token_key, access_token_secret)
+import os
+import sys
+
+
+VIDEO_FILENAME = 'C:/Users/igi.VIZRTINT/Desktop/Twitter/sample twitter_2016-10-17T16.40.40.mp4'
+TWEET_TEXT = 'Video upload test'
+
+CONSUMER_KEY = 'aNS7nZxb9EOUKLNxJdVBd9bhj'
+CONSUMER_SECRET = 'eOfp395xQkQAX2KMcVYHORLj2DrZF31WMnwV0p7ymHQiWolSRi'
+ACCESS_TOKEN_KEY = '8102552-r08dIaPKt7PpEpITGL21egnPhjY0pOdWOoj89g19Dg'
+ACCESS_TOKEN_SECRET = 'ZbIc1zfOczx1ZaHoO85WyHkny9szyXAfoByVNnhIQqGka'
+
+
+api = TwitterAPI(CONSUMER_KEY,
+                 CONSUMER_SECRET,
+                 ACCESS_TOKEN_KEY,
+                 ACCESS_TOKEN_SECRET)
+
+
+bytes_sent = 0
+total_bytes = os.path.getsize(VIDEO_FILENAME)
+print("Bytes a subir: %s" % total_bytes)
+file = open(VIDEO_FILENAME, 'rb')
+
+
+def check_status(r):
+    print(r.status_code)
+    print(r.text)
+    if r.status_code < 200 or r.status_code > 299:
+        print(r.status_code)
+        print(r.text)
+        sys.exit(0)
+
+r = api.request('media/upload',
+                {'command': 'INIT',
+                 'media_type': 'video/mp4',
+                 'total_bytes': total_bytes})
+check_status(r)
+
+media_id = r.json()['media_id']
+segment_id = 0
+
+while bytes_sent < total_bytes:
+    chunk = file.read(4*1024*1024)
+    r = api.request('media/upload', {'command': 'APPEND', 'media_id': media_id, 'segment_index': segment_id}, {'media': chunk})
+    check_status(r)
+    segment_id = segment_id + 1
+    bytes_sent = file.tell()
+    print('[' + str(total_bytes) + ']', str(bytes_sent))
+
+r = api.request('media/upload', {'command':'FINALIZE', 'media_id':media_id})
+check_status(r)
+
+r = api.request('statuses/update', {'status':TWEET_TEXT, 'media_ids':media_id})
+check_status(r)
