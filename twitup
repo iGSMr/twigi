@@ -49,8 +49,8 @@ while bytes_sent < total_bytes:
     bytes_sent = file.tell()
     print('[' + str(total_bytes) + ']', str(bytes_sent))
 
-r = api.request('media/upload', {'command':'FINALIZE', 'media_id':media_id})
+r = api.request('media/upload', {'command': 'FINALIZE', 'media_id': media_id})
 check_status(r)
 
-r = api.request('statuses/update', {'status':TWEET_TEXT, 'media_ids':media_id})
+r = api.request('statuses/update', {'status': TWEET_TEXT, 'media_ids': media_id})
 check_status(r)
