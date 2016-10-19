@@ -220,7 +220,7 @@ def allow_unverified(config):
     return False
 
 """
-   AQUI ES DONDE REALMENTE LOS ARGUMENTOS SE TOMAN Y SE INICIA EL MAIN!!!!
+   AQUI ES DONDE REALMENTE LOS ARGUMENTOS SE TOMAN Y SE INICIA EL MAIN! !!!
 """
 def fb_wrapper(config,args):
     facebook_user_token=None
