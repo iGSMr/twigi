@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
 import logging
-
-logging.basicConfig(format='%(asctime)s %(levelname)-10s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',level=logging.DEBUG)
-
-logger = logging.getLogger("facebookstory.main")
 import libstory
 import argparse
 from configparser import ConfigParser
 import sys
 import time
-
 from http.server import BaseHTTPRequestHandler,HTTPServer
 from http.client import HTTPSConnection
 from urllib.parse import urlparse, parse_qs,quote,urljoin
@@ -22,6 +17,13 @@ import tempfile
 import requests
 import ssl
 from pprint import pprint
+
+logging.basicConfig(format='%(asctime)s %(levelname)-10s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',level=logging.DEBUG)
+
+logger = logging.getLogger("facebookstory.main")
+
+
+
 
 class NoPageAccessException(Exception):
   pass

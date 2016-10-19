@@ -3,8 +3,8 @@ import os
 import sys
 
 
-VIDEO_FILENAME = 'C:/Users/igi.VIZRTINT/Desktop/Twitter/sample twitter_2016-10-17T16.40.40.mp4'
-TWEET_TEXT = 'Video upload test'
+VIDEO_FILENAME = 'C:/Users/igi.VIZRTINT/Desktop/Twitter/sample_twitter.mp4'
+TWEET_TEXT = 'Cñéóíáénê!'
 
 CONSUMER_KEY = 'aNS7nZxb9EOUKLNxJdVBd9bhj'
 CONSUMER_SECRET = 'eOfp395xQkQAX2KMcVYHORLj2DrZF31WMnwV0p7ymHQiWolSRi'
