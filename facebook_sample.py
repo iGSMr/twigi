@@ -23,15 +23,17 @@ logging.basicConfig(format='%(asctime)s %(levelname)-10s %(message)s', datefmt='
 logger = logging.getLogger("facebookstory.main")
 
 
-
-
 class NoPageAccessException(Exception):
   pass
 
+
 class InvalidTokenException(Exception):
     pass
+
+
 class SessionExpiredException(InvalidTokenException):
     pass
+
 
 class GetHandler(BaseHTTPRequestHandler):
 
@@ -61,6 +63,7 @@ class GetHandler(BaseHTTPRequestHandler):
         logger.info("Got user token. Stopping receiver...")
         serverController.start()
         return
+
 
 class ServerShutdown(threading.Thread):
     def __init__(self,server):
@@ -99,11 +102,12 @@ def fb_get_page_token(pageid,user_token,insecure=False):
     except IndexError as e:
       raise NoPageAccessException("User don't have access to any page with the specified id ({})".format(pageid))
 
-def fb_publish_video(pageid,access_token,filepointer,metadata,insecure=False):
-    if(access_token):
-        metadata["access_token"]=access_token
-    verify=False if insecure else True
-    res=requests.post("https://graph-video.facebook.com/v2.6/{page_id}/videos".format(page_id=pageid),data=metadata,files={"source":filepointer},verify=verify)
+
+def fb_publish_video(pageid, access_token, filepointer, metadata, insecure=False):
+    if access_token:
+        metadata["access_token"] = access_token
+    verify = False if insecure else True
+    res = requests.post("https://graph-video.facebook.com/v2.6/{page_id}/videos".format(page_id=pageid),data=metadata,files={"source":filepointer},verify=verify)
     print(res.content)
     print(res.status_code)
     res.raise_for_status()
@@ -142,10 +146,6 @@ def publish_to_facebook(hub, item, config):
         resp=json.loads(e.response.content.decode("UTF-8"))
         progress.status_description=resp["error"]["message"]
         hub.update_progress(progress)
-
-
-
-
 
 
 def main(args,update_outputtarget=False):
@@ -219,7 +219,9 @@ def allow_unverified(config):
             return True
     return False
 
-
+"""
+   AQUI ES DONDE REALMENTE LOS ARGUMENTOS SE TOMAN Y SE INICIA EL MAIN!!!!
+"""
 def fb_wrapper(config,args):
     facebook_user_token=None
     try:
