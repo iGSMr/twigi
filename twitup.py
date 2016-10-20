@@ -108,6 +108,8 @@ def main(args):
         logger.info("[TwitStory] Consumer secret: %s " % tw_consumer_secret)
         logger.info("[TwitStory] Access Token key: %s " % tw_access_token_key)
         logger.info("[TwitStory] Access Token secret: %s " % tw_access_token_secret)
+        ftpclient = libstory.FtpClient("")
+        ftpclient.
     except KeyError as e:
         logger.error("missing entry in configuration: {}".format(*e.args))
         sys.exit(1)
