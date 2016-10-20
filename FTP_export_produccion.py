@@ -66,8 +66,9 @@ class FileSystemExportAgent(libstory.BasePublishingAgent):
                 path = urlparse(self.config["exportfolder"]["path"]).path
                 logger.info("VALOR DE item : %s" % item)
                 logger.info("VALOR de EXT: %s" % ext)
-                logger.info("VALOR de EXT: %s" % path)
-                filepath = os.path.join(path, self.create_filename(item, ext))
+                logger.info("VALOR de path: %s" % path)
+
+                #filepath = os.path.join(path, self.create_filename(item, ext))
                 logger.info("VALOR del FILEPATH1 antes formateo: %s" % filepath)
                 ftpclient.storbinary("STOR {}".format(filepath), out)
                 logger.info("VALOR del FILEPATH2 despues formateo: %s" % format(filepath))
