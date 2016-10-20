@@ -27,7 +27,8 @@ logger = logging.getLogger("twitterstory.main")
 VIDEO_FILENAME = 'C:/Users/igi.VIZRTINT/Desktop/Twitter/sample_twitter.mp4'
 TWEET_TEXT = 'Cñéóíáénê!'
 
-"""CONSUMER_KEY = 'aNS7nZxb9EOUKLNxJdVBd9bhj'
+"""
+CONSUMER_KEY = 'aNS7nZxb9EOUKLNxJdVBd9bhj'
 CONSUMER_SECRET = 'eOfp395xQkQAX2KMcVYHORLj2DrZF31WMnwV0p7ymHQiWolSRi'
 ACCESS_TOKEN_KEY = '8102552-r08dIaPKt7PpEpITGL21egnPhjY0pOdWOoj89g19Dg'
 ACCESS_TOKEN_SECRET = 'ZbIc1zfOczx1ZaHoO85WyHkny9szyXAfoByVNnhIQqGka'
@@ -53,7 +54,8 @@ def check_status(r):
         print(r.text)
         sys.exit(0)
 
-"""r = api.request('media/upload',
+"""
+r = api.request('media/upload',
                 {'command': 'INIT',
                  'media_type': 'video/mp4',
                  'total_bytes': total_bytes})
@@ -77,59 +79,84 @@ r = api.request('statuses/update', {'status': TWEET_TEXT, 'media_ids': media_id}
 check_status(r)
 
 """
+def publish_to_twitter(hub, item, config):
+    progress = item.get_progress()
+    progress.status = "PENDING"
+    progress.step = "CLAIMED"
+    progress.status_description = "Publishing to Twitter"
+    progress.progress = 1
+    progress.total_progress = 5
+    hub.update_progress(progress)
+    payload = item.get_metadata()
+    progress.progress = 2
+    hub.update_progress(progress)
+    insecure=allow_unverified(config)
+
 def main(args):
     target_id = None
     server_url = None
     try:
+        tw_consumer_key = args["twitter"]["CONSUMER_KEY"]
+        tw_consumer_secret = args["twitter"]["CONSUMER_SECRET"]
+        tw_access_token_key = args["twitter"]["ACCESS_TOKEN_KEY"]
+        tw_access_token_secret = args["twitter"]["ACCESS_TOKEN_SECRET"]
         target_id = args["storyhub"]["target_id"]
-        logger.info("[TwitStory] Target ID: %s " % target_id)
         server_url = args["storyhub"]["url"]
+        logger.info("[TwitStory] Target ID: %s " % target_id)
         logger.info("[TwitStory] Server URL: %s " % server_url)
+        logger.info("[TwitStory] Consumer key: %s " % tw_consumer_key)
+        logger.info("[TwitStory] Consumer secret: %s " % tw_consumer_secret)
+        logger.info("[TwitStory] Access Token key: %s " % tw_access_token_key)
+        logger.info("[TwitStory] Access Token secret: %s " % tw_access_token_secret)
     except KeyError as e:
         logger.error("missing entry in configuration: {}".format(*e.args))
         sys.exit(1)
-    """try:
-        target=None
+    try:
+        target = None
         logger.info("Connecting to story server {}".format(server_url))
-        s=libstory.StoryHubClient()
+        s = libstory.StoryHubClient()
         s.connect(server_url)
-        target=s.get_output_target(target_id)
-        if target == None or update_outputtarget:
-            target=libstory.OutputTarget(s)
+        target = s.get_output_target(target_id)
+        if target is None:
+            target = libstory.OutputTarget(s)
             try:
-                target.title=args["storyhub"]["target_name"]
-                target.id=target_id
-                target.concept=args["encoding"]["concept"] if "concept" in args["encoding"] else None
-                target.variant=args["encoding"]["variant"] if "variant" in args["encoding"] else None
-                target.width=args["encoding"]["width"]
-                target.height=args["encoding"]["height"]
-                target.profile=args["encoding"]["profile"]
-                target.extension=args["encoding"]["extension"]
-                target.icon=args["storyhub"]["icon"]
+                target.title = args["storyhub"]["target_name"]
+                target.id = target_id
+                target.concept = args["encoding"]["concept"] if "concept" in args["encoding"] else None
+                target.variant = args["encoding"]["variant"] if "variant" in args["encoding"] else None
+                target.width = args["encoding"]["width"]
+                target.height = args["encoding"]["height"]
+                target.profile = args["encoding"]["profile"]
+                target.extension = args["encoding"]["extension"]
+                target.icon = args["storyhub"]["icon"]
             except KeyError as e:
                     logger.error("missing entry in configuration: {}".format(*e.args))
                     sys.exit(1)
-            target=s.create_target(target)
+            target = s.create_target(target)
         for item in target.unclaimed():
             try:
               item.claim()
             except libstory.UnableToClaimItem as e:
               print("Oooops!")
-            publish_to_facebook(s,item,args)
+            publish_to_twitter(s, item, args)
     except libstory.CollectionMissing as e:
         logger.error("Could not find {} in service document. Is this a story hub?".format(e.term))
         sys.exit(3)
     except ConnectionRefusedError as e:
         logger.error("Unable to connect to story server ({1})".format(*e.args))
-        sys.exit(2)"""
+        sys.exit(2)
+
 
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("configfile")
-        parser.add_argument("-u","--update_outputtarget",dest="update_outputtarget",action="store_true",help="Force updating the outputtarget, even if it already exists")
+        parser.add_argument("-u", "--update_outputtarget", dest="update_outputtarget", action="store_true", help="Force updating the outputtarget, even if it already exists")
         args = parser.parse_args()
-        main(args)
+        config = ConfigParser()
+        config.read(args.configfile)
+        main(config)
+
     except KeyboardInterrupt as e:
         logger.info("Interrupted by user.")
         sys.exit(1)

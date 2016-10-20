@@ -112,6 +112,7 @@ def fb_publish_video(pageid, access_token, filepointer, metadata, insecure=False
     print(res.status_code)
     res.raise_for_status()
 
+
 def publish_to_facebook(hub, item, config):
     progress = item.get_progress()
     progress.status="PENDING"
@@ -212,6 +213,7 @@ def get_facebook_apikey(config):
     server.serve_forever()
     return server.access_token
 
+
 def allow_unverified(config):
     if "disable ssl certificate validation" in config["facebook"]:
         if config["facebook"]["disable ssl certificate validation"].lower() in ["true","yes"]:
@@ -222,6 +224,8 @@ def allow_unverified(config):
 """
    AQUI ES DONDE REALMENTE LOS ARGUMENTOS SE TOMAN Y SE INICIA EL MAIN! !!!
 """
+
+
 def fb_wrapper(config,args):
     facebook_user_token=None
     try:
@@ -229,14 +233,16 @@ def fb_wrapper(config,args):
     except KeyError:
         facebook_user_token = None
     if not facebook_user_token:
-        config["facebook"]["user_token"]=get_facebook_apikey(config["facebook"])
-        facebook_user_token=config.get("facebook","user_token")
-        config.write(open(args.configfile,"w"))
+        config["facebook"]["user_token"] = get_facebook_apikey(config["facebook"])
+        facebook_user_token = config.get("facebook", "user_token")
+        config.write(open(args.configfile, "w"))
 
     insecure=allow_unverified(config)
 
     try:
-        config["facebook"]["page_token"]=fb_get_page_token(config["facebook"]["page_id"],config["facebook"]["user_token"],insecure=insecure)
+        config["facebook"]["page_token"] = fb_get_page_token(config["facebook"]["page_id"],
+                                                             config["facebook"]["user_token"],
+                                                             insecure=insecure)
     except NoPageAccessException as e:
         logger.error(e)
         sys.exit(12)
@@ -249,16 +255,18 @@ if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("configfile")
-        parser.add_argument("-u","--update_outputtarget",dest="update_outputtarget",action="store_true",help="Force updating the outputtarget, even if it already exists")
+        parser.add_argument("-u", "--update_outputtarget",
+                            dest="update_outputtarget", action="store_true",
+                            help="Force updating the outputtarget, even if it already exists")
 
-        args=parser.parse_args()
-        config=ConfigParser()
+        args = parser.parse_args()
+        config = ConfigParser()
         config.read(args.configfile)
-        retry=True
+        retry = True
         while retry:
             try:
                 fb_wrapper(config,args)
-                retry=False
+                retry = False
             except SessionExpiredException as e:
                 del config["facebook"]["user_token"]
         config.write(open(args.configfile,"w"))
