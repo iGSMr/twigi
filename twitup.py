@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
-
-from TwitterAPI import TwitterAPI
-import os
 import sys
 import logging
 import libstory
 import argparse
-from configparser import ConfigParser
+import requests
 import time
 import json
 import tempfile
-
+from configparser import ConfigParser
 from requests_oauthlib import OAuth1
-import requests
+
 
 MEDIA_ENDPOINT_URL = 'https://upload.twitter.com/1.1/media/upload.json'
 POST_TWEET_URL = 'https://api.twitter.com/1.1/statuses/update.json'
@@ -51,7 +48,7 @@ class VideoTweet(object):
 
         self.media_id = media_id
 
-        print('Media ID: %s' % str(media_id))
+        logger.info("[TwitStory] Media ID: %s" % str(media_id))
 
     def upload_append(self, tmp, oauth):
         '''
@@ -59,12 +56,11 @@ class VideoTweet(object):
         '''
         segment_id = 0
         bytes_sent = 0
-        #file = open(self.video_filename, 'rb')
 
         while bytes_sent < self.total_bytes:
             chunk = tmp.read(4 * 1024 * 1024)
 
-            print('APPEND')
+            logger.info("[TwitStory] APPEND")
 
             request_data = {
                 'command': 'APPEND',
@@ -79,22 +75,22 @@ class VideoTweet(object):
             req = requests.post(url=MEDIA_ENDPOINT_URL, data=request_data, files=files, auth=oauth)
 
             if req.status_code < 200 or req.status_code > 299:
-                print(req.status_code)
-                print(req.text)
+                logger.error('[TwitStory] %i' % req.status_code)
+                logger.error('[TwitStory] %s' % req.text)
                 sys.exit(0)
 
             segment_id = segment_id + 1
             bytes_sent = tmp.tell()
 
-            print('%s of %s bytes uploaded' % (str(bytes_sent), str(self.total_bytes)))
+            logger.info("[TwitStory] '%s of %s bytes uploaded" % (str(bytes_sent), str(self.total_bytes)))
 
-        print('Upload chunks complete.')
+            logger.info("[TwitStory] Upload chunks complete.")
 
     def upload_finalize(self, oauth):
         '''
         Finalizes uploads and starts video processing
         '''
-        print('FINALIZE')
+        logger.info("[TwitStory] FINALIZE")
 
         request_data = {
             'command': 'FINALIZE',
@@ -102,7 +98,7 @@ class VideoTweet(object):
         }
 
         req = requests.post(url=MEDIA_ENDPOINT_URL, data=request_data, auth=oauth)
-        print(req.json())
+        logger.info(req.json())
 
         self.processing_info = req.json().get('processing_info', None)
         self.check_status(oauth)
@@ -116,7 +112,7 @@ class VideoTweet(object):
 
         state = self.processing_info['state']
 
-        print('Media processing status is %s ' % state)
+        logger.info("[TwitStory] Media processing status is %s " % state)
 
         if state == u'succeeded':
             return
@@ -126,10 +122,10 @@ class VideoTweet(object):
 
         check_after_secs = self.processing_info['check_after_secs']
 
-        print('Checking after %s seconds' % str(check_after_secs))
+        logger.info("[TwitStory] Checking after %s seconds" % str(check_after_secs))
         time.sleep(check_after_secs)
 
-        print('STATUS')
+        logger.info("[TwitStory] STATUS")
 
         request_params = {
             'command': 'STATUS',
@@ -151,13 +147,13 @@ class VideoTweet(object):
         }
 
         req = requests.post(url=POST_TWEET_URL, data=request_data, auth=oauth)
-        print(req.json())
+        logger.info(req.json())
 
 
 def check_status(r):
     if r.status_code < 200 or r.status_code > 299:
         print(r.status_code)
-        print(r.text)
+        logger.error("[TwitStory] %s " % r.text)
         sys.exit(0)
 
 
@@ -175,7 +171,7 @@ def tw_publish_video(item, metadata, args, size):
         with tempfile.NamedTemporaryFile(suffix=config["encoding"]["extension"]) as tmp:
             item.download_media(tmp)
             size = tmp.tell()
-            logger.info("Size of file: %s " % size)
+            logger.info("[TwitStory] Size of file: %s " % size)
             tmp.seek(0)
             videotweet = VideoTweet(item, size)
             videotweet.upload_init(api)
@@ -184,36 +180,8 @@ def tw_publish_video(item, metadata, args, size):
             status = metadata["title"] + "||" + metadata ["description"]
             videotweet.tweet(api, status)
     except requests.exceptions.HTTPError as e:
-        resp=json.loads(e.response.content.decode("UTF-8"))
-        print(resp)
-
-    """
-    r = api.request('media/upload',
-                    {'command': 'INIT',
-                     'media_type': 'video/mp4',
-                     'total_bytes': metadata["file_size"]})
-    check_status(r)
-
-    media_id = r.json()['media_id']
-
-    segment_id = 0
-    bytes_sent = 0
-
-    while bytes_sent < metadata["file_size"]:
-        chunk = filepointer.file.read(4 * 1024 * 1024)
-        r = api.request('media/upload', {'command': 'APPEND', 'media_id': media_id, 'segment_index': segment_id},
-                        {'media': chunk})
-        check_status(r)
-        segment_id = segment_id + 1
-        bytes_sent = filepointer.file.tell()
-        print('[' + str(size) + ']', str(bytes_sent))
-
-    r = api.request('media/upload', {'command': 'FINALIZE', 'media_id': media_id})
-    check_status(r)
-
-    r = api.request('statuses/update', {'status': metadata["description"], 'media_ids': media_id})
-    check_status(r)
-    """
+        resp = json.loads(e.response.content.decode("UTF-8"))
+        logger.error(resp)
 
 
 def publish_to_twitter(hub, item, config):
@@ -233,21 +201,21 @@ def publish_to_twitter(hub, item, config):
             progress.progress=3
             hub.update_progress(progress)
             size = tmp.tell()
-            logger.info("Size of file: %s " % size)
+            logger.info("[TwitStory] Size of file: %s " % size)
             tmp.seek(0)
             progress.progress=4
             hub.update_progress(progress)
             tw_metadata = {"title": payload["title"], "description": payload["description"], "file_size": size}
-            tw_publish_video(item,tw_metadata,config, size)
+            tw_publish_video(item, tw_metadata, config, size)
         # file should now be gone!
         progress.progress=5
-        progress.status="COMPLETED"
-        progress.step="PUBLISHED"
+        progress.status = "COMPLETED"
+        progress.step = "PUBLISHED"
         hub.update_progress(progress)
     except requests.exceptions.HTTPError as e:
         progress.status="ERROR"
-        resp=json.loads(e.response.content.decode("UTF-8"))
-        progress.status_description=resp["error"]["message"]
+        resp = json.loads(e.response.content.decode("UTF-8"))
+        progress.status_description = resp["error"]["message"]
         hub.update_progress(progress)
 
 
@@ -261,19 +229,13 @@ def main(args):
         tw_access_token_secret = args["twitter"]["ACCESS_TOKEN_SECRET"]
         target_id = args["storyhub"]["target_id"]
         server_url = args["storyhub"]["url"]
-        logger.info("[TwitStory] Target ID: %s " % target_id)
-        logger.info("[TwitStory] Server URL: %s " % server_url)
-        logger.info("[TwitStory] Consumer key: %s " % tw_consumer_key)
-        logger.info("[TwitStory] Consumer secret: %s " % tw_consumer_secret)
-        logger.info("[TwitStory] Access Token key: %s " % tw_access_token_key)
-        logger.info("[TwitStory] Access Token secret: %s " % tw_access_token_secret)
 
     except KeyError as e:
         logger.error("missing entry in configuration: {}".format(*e.args))
         sys.exit(1)
     try:
         target = None
-        logger.info("Connecting to story server {}".format(server_url))
+        logger.info("[TwitStory] Connecting to story server {}".format(server_url))
         s = libstory.StoryHubClient()
         s.connect(server_url)
         target = s.get_output_target(target_id)
@@ -290,20 +252,20 @@ def main(args):
                 target.extension = args["encoding"]["extension"]
                 target.icon = args["storyhub"]["icon"]
             except KeyError as e:
-                    logger.error("missing entry in configuration: {}".format(*e.args))
-                    sys.exit(1)
+                logger.error("[TwitStory] missing entry in configuration: {}".format(*e.args))
+                sys.exit(1)
             target = s.create_target(target)
         for item in target.unclaimed():
             try:
               item.claim()
             except libstory.UnableToClaimItem as e:
-              print("Oooops!")
+                logger.info("[TwitStory] No able to claim the item!")
             publish_to_twitter(s, item, args)
     except libstory.CollectionMissing as e:
-        logger.error("Could not find {} in service document. Is this a story hub?".format(e.term))
+        logger.error("[TwitStory] Could not find {} in service document. Is this a story hub?".format(e.term))
         sys.exit(3)
     except ConnectionRefusedError as e:
-        logger.error("Unable to connect to story server ({1})".format(*e.args))
+        logger.error("[TwitStory] Unable to connect to story server ({1})".format(*e.args))
         sys.exit(2)
 
 
@@ -318,7 +280,5 @@ if __name__ == "__main__":
         main(config)
 
     except KeyboardInterrupt as e:
-        logger.info("Interrupted by user.")
+        logger.info("[TwitStory] Interrupted by user.")
         sys.exit(1)
-
-
