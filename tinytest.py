@@ -8,10 +8,10 @@ from requests_oauthlib import OAuth1
 VIDEO_FILENAME = 'C:/Users/igi.VIZRTINT/Desktop/Twitter/long.mp4'
 TWEET_TEXT = 'Video upload test'
 
-CONSUMER_KEY = 'aNS7nZxb9EOUKLNxJdVBd9bhj'
-CONSUMER_SECRET = 'eOfp395xQkQAX2KMcVYHORLj2DrZF31WMnwV0p7ymHQiWolSRi'
-ACCESS_TOKEN = '8102552-r08dIaPKt7PpEpITGL21egnPhjY0pOdWOoj89g19Dg'
-ACCESS_TOKEN_SECRET = 'ZbIc1zfOczx1ZaHoO85WyHkny9szyXAfoByVNnhIQqGka'
+CONSUMER_KEY = 'aNS****9bhj'
+CONSUMER_SECRET = 'eOfp****WolSRi'
+ACCESS_TOKEN = '810***19Dg'
+ACCESS_TOKEN_SECRET = 'ZbI***qGka'
 
 """def check_status(r):
     print(r.status_code)
