@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<profile xmlns='http://www.vizrt.com/2013/vcos' id='twitter'>
+    <container format='mp4'/>
+    <video>
+        <aspect>1:1</aspect>
+        <codec name='h264'>
+            <bitrate>2500000</bitrate>
+            <cabac>false</cabac>
+            <gopsize>25</gopsize>
+            <profile>baseline</profile>
+            <vendor codec='h264' name='nvidia'/>
+        </codec>
+        <field_order>progressive</field_order>
+        <fps>25:1</fps>
+        <height>1024</height>
+        <resize_mode>pad</resize_mode>
+        <width>1024</width>
+    </video>
+    <audio>
+        <channels>2</channels>
+        <codec name='aac'>
+            <bitrate>128000</bitrate>
+            <profile>low_complexity</profile>
+        </codec>
+        <frequency>44100</frequency>
+    </audio>
+</profile>
