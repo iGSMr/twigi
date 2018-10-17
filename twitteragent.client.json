@@ -1,0 +1,10 @@
+{
+  // Reference: http://docs.identityserver.io/en/release/reference/client.html
+  "ClientId": "twitteragent",
+  "ClientSecrets": [ { "value": "skDZCNhZ3Sum-4e-vLhLly2E" } ],
+  "AllowedGrantTypes": [ "authorization_code" ],
+  "AllowedScopes": [ "openid", "profile", "organization", "api.vizrt.com" ],
+  "AllowOfflineAccess": true,
+  "RequireConsent": false,
+  "RedirectUris": [ "http://localhost:34585/go" ]
+}
